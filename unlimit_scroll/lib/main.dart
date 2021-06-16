@@ -124,6 +124,7 @@ class RandomWords extends StatefulWidget {
 
 class _RandomWordsState extends State<RandomWords> {
   final words = <WordPair>[];
+  final saveWords = <WordPair>{};
 
   Widget buildInfinityList() {
     return ListView.builder(
@@ -141,15 +142,61 @@ class _RandomWordsState extends State<RandomWords> {
   }
 
   Widget buildRow(WordPair word) {
+    final saved = saveWords.contains(word);
+
     return ListTile(
       title: Text(WordPair.random().asPascalCase),
+      trailing: Icon(
+        saved ? Icons.favorite : Icons.favorite_border,
+        color: saved ? Colors.red : Colors.blue,
+      ),
+      onTap: () {
+        setState(() {
+          if (saved) {
+            saveWords.remove(word);
+          } else {
+            saveWords.add(word);
+          }
+        });
+      },
+    );
+  }
+
+  void pushSavedWord() {
+    // print("HI");
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (BuildContext context) {
+          final tiles = saveWords.map((WordPair word) => ListTile(
+                title: Text(word.asPascalCase),
+              ));
+
+          final divided = tiles.isNotEmpty
+              ? ListTile.divideTiles(context: context, tiles: tiles).toList()
+              : <Widget>[];
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text("Saved Words"),
+            ),
+            body: ListView(
+              children: divided,
+            ),
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Infinity List")),
+      appBar: AppBar(
+        title: Text("Infinity List"),
+        actions: [
+          IconButton(onPressed: pushSavedWord, icon: Icon(Icons.list)),
+        ],
+      ),
       body: buildInfinityList(),
     );
   }
